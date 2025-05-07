@@ -50,4 +50,18 @@ def ProductUpdate(request, pk):
       form = ProductForm(initial={'name': product.name, 'price': product.price})
   return render(request, "product_update_form.html", {"form": form, "msg": msg})
 
+def Basket(request):
+  # form = BasketForm()
+  msg = False
+  products = Product.objects.all().values()
+  # if request.method == 'POST':
+  #   form = BasketForm(request.POST)
+  #   if form.is_valid():
+  #     products = form.cleaned_data['products']
+  #     quantity = form.cleaned_data['quantity']
+  #     basket = Basket(product=products,quantity=quantity)
+  #     basket.save()
+  #     msg = {'code': 'success', 'label': 'Basket has been created.'}
+  return render(request, 'basket.html', {"products": products, "msg": msg})
+
 
