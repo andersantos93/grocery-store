@@ -1,0 +1,33 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Products
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center g-2 mt-2">
+  <div class="col-6">
+    <h4 class="text-center">List of products</h4>
+    <table class="table table-striped ">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Price</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in product_list %}
+          <tr class="">
+            <td scope="row">{{ product.name }}</td>
+            <td>{{ product.price }}</td>
+            <td>
+              <a href="{% url "product-update" product.pk %}">Update</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
