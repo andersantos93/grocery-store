@@ -7,6 +7,7 @@ from django.views import generic
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied
 import json
 import datetime
 from .forms import *
@@ -126,5 +127,19 @@ class PurchaseHistoryView(PermissionRequiredMixin, LoginRequiredMixin, generic.L
   permission_required = "store.view_basket"
 
   def get_queryset(self):
+    pk = self.kwargs.get('pk')
     user = self.request.user
+    if pk:
+      if user.groups.filter(name="staff").exists():
+        return Basket.objects.filter(customer__pk=pk)
+      else:
+        raise PermissionDenied("You don't have permission to perform this action.")
     return Basket.objects.filter(customer=user)
+class CustomerListView(PermissionRequiredMixin, LoginRequiredMixin, generic.ListView):
+  model = User
+  context_object_name = 'customer_list'
+  template_name = 'customer_list.html'
+  permission_required = "auth.view_user"
+
+  def get_queryset(self):
+    return User.objects.filter(groups__name='customers')

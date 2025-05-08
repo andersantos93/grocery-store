@@ -24,3 +24,4 @@ class Basket(models.Model):
   )
   date_created = models.DateField(null=True, blank=True)
   date_modified = models.DateField(null=True, blank=True)
+

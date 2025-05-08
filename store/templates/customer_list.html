@@ -1,0 +1,35 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Customers
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center g-2 mt-4">
+  <div class="col-6">
+    <h4>List of Customers</h4>
+    <table class="table table-striped ">
+      <thead>
+        <tr>
+          <th scope="col">First name</th>
+          <th scope="col">Last name</th>
+          <th scope="col">E-mail</th>
+          <th scope="col" class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customer_list %}
+          <tr>
+            <td>{{ customer.first_name }}</td>
+            <td>{{ customer.last_name }}</td>
+            <td>{{ customer.email }}</td>
+            <td class="text-center">
+              <a href="{% url "customer-purchase-history" customer.id %}">View Purchase History</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
