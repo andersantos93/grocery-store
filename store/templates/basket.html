@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-center g-2 gap-5 p-4">
-  <div class="col-3">
+  <div class="col-4">
       <h5>Add your items</h5>
       <form action="" method="post">
         {% csrf_token %}
@@ -33,19 +33,23 @@
     <div class="col-6">
       <div class="d-flex flex-column">
         <h5>Your Basket</h5>
-        <ul id="basket-list" class="list-group"></ul>
-        <div class="col-3">
+        <ul id="basket-list" class="list-group mt-2"></ul>
+        <h5 id="total-amount"></h5>
+        <div class="col-4">
           <button type="button" id="add-order" class="btn btn-primary mt-3">Order</button>
+          <div class="d-none" id="alert">
+            <div class="alert alert-success mt-4" role="alert">
+              <strong>Order has been created.</strong>
+              <div class="mt-2 text-center" >
+                <a href="{% url "customer-purchase-history" %}">View Purchase History</a>
+              </div>
+            </div>
+          </div> 
         </div>
       </div>
     </div>  
   </div>
 </div>
-{% comment %} <div class="d-flex g-2 gap-5 p-4">
-  <div class="alert alert-success mt-4" role="alert">
-    <strong>Order has been created.</strong>
-  </div>
-</div> {% endcomment %}
 <script>
    var basketList = [];
    var csrf_token = "";
@@ -74,6 +78,7 @@
     csrf_token = data.csrfmiddlewaretoken;
 
     if(name && quantity) {
+      total_amount = 0;
       const basket = basketList.find(item => item.id === id);
       if (basket) {
         basket.quantity += quantity;
@@ -96,10 +101,12 @@
     const list = document.getElementById('basket-list');
     list.innerHTML = '';
 
+    total_amount = 0;
     basketList.forEach(item => {
       const li = document.createElement('li');
       li.classList.add("d-flex", "justify-content-between", "list-group-item");
-      li.textContent = `Product: ${item.name} | Quantity: ${item.quantity} | Total: $${item.total_price}`;
+      li.textContent = `Product: ${item.name} | Quantity: ${item.quantity} | Total: $${item.total_price.toFixed(2)}`;
+      total_amount += item.total_price;
 
       const removeBtn = document.createElement('button');
       removeBtn.textContent = 'Remove';
@@ -109,6 +116,14 @@
       li.appendChild(removeBtn);
       list.appendChild(li);
     });
+
+    const totalAmountElement = document.getElementById("total-amount");
+    totalAmountElement.classList.add("mt-3");
+    if(total_amount === 0) {
+      totalAmountElement.innerHTML = "";
+    } else {
+      totalAmountElement.innerHTML = `Total amount: $${total_amount.toFixed(2)}`;
+    }
   }
 
   function submitOrder(data, csrfToken) {
@@ -123,10 +138,22 @@
     .then(response => response.json())
     .then(data => {
       console.log('Success:', data);
+      showAlertMessage(true, data.message);
     })
     .catch((error) => {
       console.error('Error:', error);
     });
+  }
+
+  function showAlertMessage(showMessage, message) {
+    const alertElement = document.getElementById("alert")
+    if(showMessage) {
+      alertElement.classList.remove("d-none");
+      alertElement.classList.add("d-block");
+    } else {
+      element.classList.remove("d-block");
+      element.classList.add("d-none");
+    }
   }
 </script>
 {% endblock %}

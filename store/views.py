@@ -114,7 +114,7 @@ def BasketView(request):
             customer=request.user,
           )
           basket.save()
-          return JsonResponse({'message': 'success'}, status=200)
+          return JsonResponse({'message': 'Order has been created'}, status=200)
         except json.JSONDecodeError:
           return JsonResponse({'error': 'Error requesting service, please try again.'}, status=500)
     except json.JSONDecodeError:
