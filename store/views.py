@@ -2,18 +2,48 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.template import loader
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import generic
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 import json
 import datetime
 from .forms import *
 from .models import *
 
+def LoginView(request):
+  form = LoginForm()
+  msg = False
+  if request.method == 'POST':
+    form = LoginForm(request.POST)
+    if form.is_valid():
+      user = authenticate(
+        username = form.cleaned_data['username'],
+        password = form.cleaned_data['password']
+      )
+      if user is not None:
+        login(request, user)
+        response = redirect("/")
+        return response
+      else:
+        msg = {"code": "danger", "label": "Failed Authentication!"}
+  context = {
+    'form': form,
+    'msg': msg
+  }
+  return render(request, 'login.html', context)
+
+def LogoutView(request):
+  logout(request)
+  return redirect("/login")
+
+@login_required
 def index(request):
   template = loader.get_template("index.html")
   return HttpResponse(template.render())
 
+@login_required
 def ProductRegisterView(request):
   form = ProductForm()
   msg = False
@@ -30,12 +60,13 @@ def ProductRegisterView(request):
         msg = {'code': 'success', 'label': 'Product has been created.'}
   return render(request, 'product_form.html', {"form": form, "msg": msg})
 
-class ProductListView(generic.ListView):
+class ProductListView(LoginRequiredMixin, generic.ListView):
   model = Product
   queryset = Product.objects.all()
   context_object_name = 'product_list'
   template_name = 'product_list.html'
 
+@login_required
 def ProductUpdateView(request, pk):
   try:
     product = Product.objects.get(pk=pk)
@@ -84,7 +115,7 @@ def BasketView(request):
       return JsonResponse({'error': 'Invalid JSON'}, status=400)
   return render(request, 'customer/basket.html', {"products": products})
 
-class CustomerPurchaseHistoryView(generic.ListView):
+class CustomerPurchaseHistoryView(LoginRequiredMixin, generic.ListView):
   model = Basket
   context_object_name = 'purchase_history'
   template_name = 'customer/purchase_history.html'
