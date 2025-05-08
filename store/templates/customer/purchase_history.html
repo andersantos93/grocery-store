@@ -1,0 +1,37 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Customer - Purchase History
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center g-2 mt-4">
+  <div class="col-6">
+    <h4>Purchase History</h4>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Basket</th>
+          <th scope="col" class="text-center">Date of purchase</th>
+          <th scope="col" class="text-center">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in purchase_history %}
+          <tr>
+            <td class="p-3">
+              {% for product in item.products %}
+                <strong>{{ product.name|capfirst }}</strong><br>
+                Quantity: {{ product.quantity }}<br>
+                Total Price: ${{ product.total_price }}<br/>
+              {% endfor %}
+            </td>
+            <td class="text-center align-middle">{{ item.date_created }}</td>
+            <td class="text-center align-middle">{{ item.get_status_display  }}</td>            
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

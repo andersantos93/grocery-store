@@ -82,6 +82,13 @@ def BasketView(request):
           return JsonResponse({'error': 'Error requesting service, please try again.'}, status=500)
     except json.JSONDecodeError:
       return JsonResponse({'error': 'Invalid JSON'}, status=400)
-  return render(request, 'basket.html', {"products": products})
+  return render(request, 'customer/basket.html', {"products": products})
 
+class CustomerPurchaseHistoryView(generic.ListView):
+  model = Basket
+  context_object_name = 'purchase_history'
+  template_name = 'customer/purchase_history.html'
 
+  def get_queryset(self):
+    user = self.request.user
+    return Basket.objects.filter(customer=user)
