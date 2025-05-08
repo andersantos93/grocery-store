@@ -7,5 +7,5 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Basket)
 class BasketAdmin(admin.ModelAdmin):
-  list_display = ('customer', 'products', 'STATUS', 'date_created', 'date_modified')
+  list_display = ('customer', 'products', 'status', 'date_created', 'date_modified')
 

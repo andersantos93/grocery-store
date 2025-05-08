@@ -14,6 +14,13 @@ class Product(models.Model):
 class Basket(models.Model):
   customer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
   products = models.JSONField()
-  STATUS = (('a', 'Approved'), ('d', 'Denied'), ('w', 'Waiting for approval'))
+  BASKET_STATUS = (('a', 'Approved'), ('d', 'Denied'), ('w', 'Waiting for approval'))
+  status = models.CharField(
+    max_length=1,
+    choices=BASKET_STATUS,
+    blank=True,
+    default='w',
+    help_text='Basket status'
+  )
   date_created = models.DateField(null=True, blank=True)
   date_modified = models.DateField(null=True, blank=True)
