@@ -5,8 +5,8 @@ from django.template import loader
 from django.shortcuts import render, redirect
 from django.views import generic
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
 import json
 import datetime
 from .forms import *
@@ -44,6 +44,7 @@ def index(request):
   return HttpResponse(template.render())
 
 @login_required
+@permission_required('store.add_product', raise_exception=True)
 def ProductRegisterView(request):
   form = ProductForm()
   msg = False
@@ -60,13 +61,15 @@ def ProductRegisterView(request):
         msg = {'code': 'success', 'label': 'Product has been created.'}
   return render(request, 'product_form.html', {"form": form, "msg": msg})
 
-class ProductListView(LoginRequiredMixin, generic.ListView):
+class ProductListView(PermissionRequiredMixin, LoginRequiredMixin, generic.ListView):
   model = Product
   queryset = Product.objects.all()
   context_object_name = 'product_list'
   template_name = 'product_list.html'
+  permission_required = "store.view_product"
 
 @login_required
+@permission_required('store.change_product', raise_exception=True)
 def ProductUpdateView(request, pk):
   try:
     product = Product.objects.get(pk=pk)
@@ -88,6 +91,7 @@ def ProductUpdateView(request, pk):
 
 @csrf_protect
 @login_required
+@permission_required('store.add_basket', raise_exception=True)
 def BasketView(request):
   products = Product.objects.all().values()
   if request.method == 'POST':
@@ -113,12 +117,13 @@ def BasketView(request):
           return JsonResponse({'error': 'Error requesting service, please try again.'}, status=500)
     except json.JSONDecodeError:
       return JsonResponse({'error': 'Invalid JSON'}, status=400)
-  return render(request, 'customer/basket.html', {"products": products})
+  return render(request, 'basket.html', {"products": products})
 
-class CustomerPurchaseHistoryView(LoginRequiredMixin, generic.ListView):
+class PurchaseHistoryView(PermissionRequiredMixin, LoginRequiredMixin, generic.ListView):
   model = Basket
   context_object_name = 'purchase_history'
-  template_name = 'customer/purchase_history.html'
+  template_name = 'purchase_history.html'
+  permission_required = "store.view_basket"
 
   def get_queryset(self):
     user = self.request.user
