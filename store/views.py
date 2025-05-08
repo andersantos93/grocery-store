@@ -2,10 +2,11 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.template import loader
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import generic
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import PermissionDenied
 import json
@@ -119,6 +120,43 @@ def BasketView(request):
     except json.JSONDecodeError:
       return JsonResponse({'error': 'Invalid JSON'}, status=400)
   return render(request, 'basket.html', {"products": products})
+
+class BasketReviewListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+  model = Basket
+  template_name = 'basket_review_list.html'
+  context_object_name = 'baskets'
+  
+  def test_func(self):
+    return self.request.user.groups.filter(name="staff").exists()
+
+  def get_queryset(self):
+    return Basket.objects.filter(status='w')
+  
+class BasketApproveView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+  def test_func(self):
+    return self.request.user.groups.filter(name="staff").exists()
+  
+  def post(self, request, pk):
+    basket = get_object_or_404(Basket, pk=pk)
+    current_date = datetime.date.today()
+    basket.date_modified = current_date
+    basket.status = 'a'
+    basket.save()
+    messages.success(request, "Basket approved.")
+    return redirect('basket-review')
+
+class BasketDenyView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+  def test_func(self):
+    return self.request.user.groups.filter(name="staff").exists()
+  
+  def post(self, request, pk):
+    basket = get_object_or_404(Basket, pk=pk)
+    current_date = datetime.date.today()
+    basket.date_modified = current_date
+    basket.status = 'd'
+    basket.save()
+    messages.success(request, "Basket denied.")
+    return redirect('basket-review')
 
 class PurchaseHistoryView(PermissionRequiredMixin, LoginRequiredMixin, generic.ListView):
   model = Basket

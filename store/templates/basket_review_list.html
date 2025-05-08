@@ -1,0 +1,54 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Baskets Review
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center g-2 mt-4">
+  <div class="col-8">
+    <h4>Baskets</h4>
+    <table class="table table-striped">
+      <thead>
+        <tr class="text-center">
+          <th scope="col">Customer</th>
+          <th scope="col">Basket</th>
+          <th scope="col">Date</th>
+          <th scope="col">Status</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for basket in baskets %}
+          <tr class="text-center align-middle">
+            <td>{{ basket.customer.get_full_name }}</td>
+            <td class="p-3">
+              {% for product in basket.products %}
+                <strong>{{ product.name|capfirst }}</strong><br>
+                Quantity: {{ product.quantity }}<br>
+                Total Price: ${{ product.total_price }}<br/>
+              {% endfor %}
+            </td>
+            <td>{{ basket.date_created }}</td>
+            <td>{{ basket.get_status_display }}</td>
+            <td>
+              <form method="post" action="{% url 'basket-approve' basket.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-success btn-sm">Approve</button>
+              </form>
+              <form method="post" action="{% url 'basket-deny' basket.pk %}"" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-danger btn-sm">Deny</button>
+              </form>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4">No pending baskets.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
